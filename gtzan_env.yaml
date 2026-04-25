@@ -1,0 +1,44 @@
+name: gtzan
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+
+  # ── PyTorch stack (CUDA 12.1 – GTX 1660 Super + Colab kompatibilis) ──
+  - pytorch=2.2.*
+  - torchvision=0.17.*
+  - torchaudio=2.2.*
+  - pytorch-cuda=12.1
+
+  # ── Audio feldolgozás ──────────────────────────────────────────────────
+  - librosa=0.10.*
+  - pysoundfile
+
+  # ── Adattudomány / ML ──────────────────────────────────────────────────
+  - numpy=1.26.*
+  - pandas=2.2.*
+  - scikit-learn=1.4.*
+  - scipy=1.13.*
+
+  # ── Vizualizáció ──────────────────────────────────────────────────────
+  - matplotlib=3.8.*
+  - seaborn=0.13.*
+
+  # ── Jupyter / fejlesztési eszközök ───────────────────────────────────
+  - jupyter=1.0.*
+  - ipykernel
+  - ipywidgets
+
+  # ── Modell mentés / export ───────────────────────────────────────────
+  - pip:
+    - onnx==1.16.*
+    - onnxruntime-gpu==1.18.*
+    - streamlit==1.35.*
+    - audiomentations==0.36.*
+    - tqdm
+    - joblib
+    - kaggle
