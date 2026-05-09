@@ -214,3 +214,4 @@ st.caption(
     "GTZANCNNModel (VGG-stílusú, 4×Conv blokk) · "
     "PyTorch → ONNX Runtime"
 )
+
