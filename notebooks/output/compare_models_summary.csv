@@ -1,0 +1,5 @@
+model,type,accuracy,macro_f1,weighted_f1,accuracy_pct
+CNN (Mel-spectrogram),Deep Learning,0.857,,,85.7
+Random Forest,Baseline ML,0.775,0.772,0.772,77.5
+SVC (RBF kernel),Baseline ML,0.765,0.764,0.764,76.5
+Logistic Regression,Baseline ML,0.74,0.74,0.74,74.0
