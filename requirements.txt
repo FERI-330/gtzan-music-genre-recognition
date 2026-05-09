@@ -1,0 +1,7 @@
+streamlit
+onnxruntime
+librosa
+numpy
+matplotlib
+Pillow
+soundfile
