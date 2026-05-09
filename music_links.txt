@@ -1,0 +1,163 @@
+# ============================================================
+# BLUES
+# ============================================================
+# Artist: Albert King & SRV | Title: Pride And Joy
+https://www.youtube.com/watch?v=dX4FoSIg9Do
+# Artist: B.B. King | Title: The Thrill Is Gone (Crossroads 2010)
+https://www.youtube.com/watch?v=oica5jG7FpU
+# Artist: B.B. King | Title: The Thrill Is Gone (Studio)
+https://www.youtube.com/watch?v=ec9jfBxKhzo
+# Artist: Jimi Hendrix | Title: Red House (Live LA Forum 1969)
+https://www.youtube.com/watch?v=-N0JNgPAX-U
+# Artist: Muddy Waters | Title: Mannish Boy
+https://www.youtube.com/watch?v=t9SHSGpMQRw
+# Artist: Robert Johnson | Title: Cross Road Blues
+https://www.youtube.com/watch?v=BUAO7MFEnQc
+# Artist: Howlin Wolf | Title: Smokestack Lightnin
+https://www.youtube.com/watch?v=8sAXNga8SBE
+# Artist: Gary Moore | Title: Still Got The Blues
+https://www.youtube.com/watch?v=iqITsWHqHKM
+# Artist: Stevie Ray Vaughan | Title: Pride And Joy (Live)
+https://www.youtube.com/watch?v=GJOjYBN-fM0
+
+# ============================================================
+# CLASSICAL
+# ============================================================
+# Artist: Erik Satie | Title: Gymnopedie No. 1
+https://www.youtube.com/watch?v=S-Xm7s9eGxU
+# Artist: Gustav Holst | Title: The Planets - Mars
+https://www.youtube.com/watch?v=L0bcRCCg01I
+# Artist: Claude Debussy | Title: Clair de Lune
+https://www.youtube.com/watch?v=CvFH_6DNRCY
+# Artist: J.S. Bach | Title: Cello Suite No. 1 in G Major
+https://www.youtube.com/watch?v=1prweT95Mo0
+# Artist: Frederic Chopin | Title: Nocturne Op. 9 No. 2
+https://www.youtube.com/watch?v=9E6b3swbnWg
+# Artist: Ludwig van Beethoven | Title: Moonlight Sonata
+https://www.youtube.com/watch?v=4Tr0otuiQuU
+
+# ============================================================
+# COUNTRY
+# ============================================================
+# Artist: Dolly Parton | Title: Jolene
+https://www.youtube.com/watch?v=Ixrje2rXLMA
+# Artist: Johnny Cash | Title: Ring of Fire
+https://www.youtube.com/watch?v=sENM2wA_FTg
+# Artist: Johnny Cash | Title: Hurt
+https://www.youtube.com/watch?v=8AHCfZTRGiI
+# Artist: Willie Nelson | Title: On The Road Again
+https://www.youtube.com/watch?v=CgVYSxFDMRk
+# Artist: Hank Williams | Title: Your Cheatin Heart
+https://www.youtube.com/watch?v=a3GcHRMqZBg
+# Artist: Patsy Cline | Title: Crazy
+https://www.youtube.com/watch?v=pBGNA4DsBgs
+
+# ============================================================
+# DISCO
+# ============================================================
+# Artist: Bee Gees | Title: Stayin Alive
+https://www.youtube.com/watch?v=I_izvAbhExY
+# Artist: Chic | Title: Le Freak
+https://www.youtube.com/watch?v=RKXEKPdnVuM
+# Artist: Gloria Gaynor | Title: I Will Survive
+https://www.youtube.com/watch?v=ARt9HV9T0w8
+# Artist: Donna Summer | Title: Hot Stuff
+https://www.youtube.com/watch?v=R0_if-VPeJ0
+# Artist: Earth Wind and Fire | Title: September
+https://www.youtube.com/watch?v=Gs069dndIYk
+
+# ============================================================
+# HIPHOP
+# ============================================================
+# Artist: Eminem | Title: Lose Yourself
+https://www.youtube.com/watch?v=_Yhyp-_hX2s
+# Artist: Kendrick Lamar | Title: HUMBLE.
+https://www.youtube.com/watch?v=tvTRZJ-4EyI
+# Artist: Nas | Title: NY State Of Mind
+https://www.youtube.com/watch?v=TCqTkIolV0k
+# Artist: Jay-Z | Title: 99 Problems
+https://www.youtube.com/watch?v=B9dSYgd5Elk
+# Artist: Dr. Dre ft. Snoop Dogg | Title: The Next Episode
+https://www.youtube.com/watch?v=QZXc39hT8t4
+# Artist: Tupac | Title: California Love
+https://www.youtube.com/watch?v=5wBTdfAkqGU
+
+# ============================================================
+# JAZZ
+# ============================================================
+# Artist: Dave Brubeck Quartet | Title: Take Five
+https://www.youtube.com/watch?v=vmDDOFXSgAs
+# Artist: Thelonious Monk | Title: Round Midnight
+https://www.youtube.com/watch?v=XGNoOBCQ1NU
+# Artist: Miles Davis | Title: So What
+https://www.youtube.com/watch?v=ylXk1LBvIqU
+# Artist: John Coltrane | Title: A Love Supreme Part 1
+https://www.youtube.com/watch?v=ll3CMgiUPuU
+# Artist: Bill Evans | Title: Waltz For Debby
+https://www.youtube.com/watch?v=XCkGMF5JXxQ
+# Artist: Louis Armstrong | Title: What A Wonderful World
+https://www.youtube.com/watch?v=CWzrABouyeE
+
+# ============================================================
+# METAL
+# ============================================================
+# Artist: Black Sabbath | Title: Paranoid
+https://www.youtube.com/watch?v=0qanF-91aJo
+# Artist: Judas Priest | Title: Breaking the Law
+https://www.youtube.com/watch?v=TBuCHVGhRPY
+# Artist: Metallica | Title: Master of Puppets
+https://www.youtube.com/watch?v=E0ozmU9cJDg
+# Artist: Iron Maiden | Title: The Trooper
+https://www.youtube.com/watch?v=k1lYOhLGtNI
+# Artist: Ozzy Osbourne | Title: Crazy Train
+https://www.youtube.com/watch?v=eQbNPdALvdg
+# Artist: Pantera | Title: Walk
+https://www.youtube.com/watch?v=nWXMoV8_UJg
+
+# ============================================================
+# POP
+# ============================================================
+# Artist: Dolly Parton | Title: Jolene
+https://www.youtube.com/watch?v=Ixrje2rXLMA
+# Artist: Michael Jackson | Title: Thriller
+https://www.youtube.com/watch?v=sOnqjkJTMaA
+# Artist: Madonna | Title: Like A Prayer
+https://www.youtube.com/watch?v=79fzeNUqQbQ
+# Artist: Prince | Title: Purple Rain
+https://www.youtube.com/watch?v=TvnYmWpD_T8
+# Artist: David Bowie | Title: Heroes
+https://www.youtube.com/watch?v=p13yZAjhU0M
+# Artist: Fleetwood Mac | Title: Dreams
+https://www.youtube.com/watch?v=mrZRURcb1cM
+
+# ============================================================
+# REGGAE
+# ============================================================
+# Artist: Toots and The Maytals | Title: Pressure Drop
+https://www.youtube.com/watch?v=7X2-cgLY9YQ
+# Artist: Bob Marley | Title: No Woman No Cry (Live)
+https://www.youtube.com/watch?v=fHJf2ybF8YE
+# Artist: Bob Marley | Title: Redemption Song
+https://www.youtube.com/watch?v=QrY9eHkXTa4
+# Artist: Peter Tosh | Title: Legalize It
+https://www.youtube.com/watch?v=3ZEsWHKFabc
+# Artist: Jimmy Cliff | Title: Many Rivers To Cross
+https://www.youtube.com/watch?v=uJBUSgr7LPE
+
+# ============================================================
+# ROCK
+# ============================================================
+# Artist: Eagles | Title: Hotel California (2013 Remaster)
+https://www.youtube.com/watch?v=EqPtz5qN7HM
+# Artist: Eagles | Title: Hotel California (Live 1977)
+https://www.youtube.com/watch?v=lOZZMBSMGH8
+# Artist: Nirvana | Title: Come As You Are
+https://www.youtube.com/watch?v=vabnZ9-ex7o
+# Artist: Led Zeppelin | Title: Stairway To Heaven
+https://www.youtube.com/watch?v=xbhCPt6PZIU
+# Artist: The Rolling Stones | Title: Paint It Black
+https://www.youtube.com/watch?v=O4irXQhgMqg
+# Artist: Pink Floyd | Title: Wish You Were Here
+https://www.youtube.com/watch?v=IXdNnw99-Ic
+# Artist: Queen | Title: Bohemian Rhapsody
+https://www.youtube.com/watch?v=fJ9rUzIMcZQ
