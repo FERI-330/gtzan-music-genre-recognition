@@ -21,18 +21,20 @@ GENRE_EMOJI = {
 }
 
 SR               = 22050
-SEGMENT_DURATION = 3.0    # each window length in seconds
-SEGMENT_STEP     = 3.0    # hop between windows — same as duration = no overlap, no gap
+SEGMENT_DURATION = 3.0
+SEGMENT_STEP     = 3.0
 N_MELS           = 128
 HOP_LENGTH       = 512
 IMG_SIZE         = 224
 IMAGENET_MEAN    = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD     = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
-# Pixels per second in the strip (controls visual width)
-PX_PER_SEC  = 40          # 3s segment → 120px wide
-STRIP_H     = 180         # spectrogram height px
-LABEL_H     = 28          # bottom label bar height px
+# Classification uses only N_VOTE evenly-spaced segments → fast
+N_VOTE      = 7
+
+PX_PER_SEC  = 40
+STRIP_H     = 180
+LABEL_H     = 28
 
 MODEL_PATH = Path(__file__).parent.parent / "models" / "cnn_gtzan.onnx"
 
@@ -76,39 +78,46 @@ def softmax(x: np.ndarray) -> np.ndarray:
     e = np.exp(x - x.max())
     return e / e.sum()
 
-def predict_file_full(path: str, sess: ort.InferenceSession):
-    """
-    Covers the ENTIRE song with non-overlapping 3s windows.
-    Returns:
-      - overall_probs: (10,) averaged over all segments
-      - seg_data: list of (start_sec, mel_db, probs) — every 3s, no gaps
-    """
-    duration = librosa.get_duration(path=path)
-    starts   = np.arange(0.0, duration - SEGMENT_DURATION * 0.5, SEGMENT_STEP)
+# ── PHASE 1: Quick classification (N_VOTE segments) ──────────────────────────
+def classify_quick(path: str, sess: ort.InferenceSession):
+    """Sample N_VOTE evenly-spaced segments for fast majority vote."""
+    duration  = librosa.get_duration(path=path)
+    max_start = max(0.0, duration - SEGMENT_DURATION)
+    starts    = np.linspace(0.0, max_start, min(N_VOTE, max(1, int(max_start / 1.5) + 1)))
 
-    all_probs, seg_data = [], []
-    progress = st.progress(0, text="Analysing segments...")
-    n_total  = len(starts)
-
-    for i, start in enumerate(starts):
+    all_probs = []
+    for start in starts:
         try:
             mel_db = mel_segment(path, float(start))
             tensor = mel_to_tensor(mel_db)
             logits = sess.run(None, {sess.get_inputs()[0].name: tensor})[0][0]
-            p      = softmax(logits)
-            all_probs.append(p)
-            seg_data.append((float(start), mel_db, p))
+            all_probs.append(softmax(logits))
         except Exception:
             pass
-        progress.progress((i + 1) / n_total, text=f"Segment {i+1}/{n_total}…")
-
-    progress.empty()
 
     if not all_probs:
-        return None, []
-    return np.mean(all_probs, axis=0), seg_data
+        return None
+    return np.mean(all_probs, axis=0)
 
-# ── Build seamless horizontal PNG ─────────────────────────────────────────────
+# ── PHASE 2: Full spectrogram (every segment, no CNN) ────────────────────────
+def build_full_seg_data(path: str) -> list:
+    """Load every SEGMENT_STEP segment for visualisation — no CNN inference."""
+    duration = librosa.get_duration(path=path)
+    starts   = np.arange(0.0, duration - SEGMENT_DURATION * 0.5, SEGMENT_STEP)
+    seg_data = []
+    prog = st.progress(0, text="Generating spectrogram…")
+    n = len(starts)
+    for i, start in enumerate(starts):
+        try:
+            mel_db = mel_segment(path, float(start))
+            seg_data.append((float(start), mel_db))
+        except Exception:
+            pass
+        prog.progress((i + 1) / n, text=f"Spectrogram: segment {i+1}/{n}…")
+    prog.empty()
+    return seg_data
+
+# ── Build seamless PNG ────────────────────────────────────────────────────────
 _MAGMA = cm.get_cmap("magma")
 
 def mel_to_rgb_strip(mel_db: np.ndarray, w: int, h: int) -> Image.Image:
@@ -121,57 +130,37 @@ def mel_to_rgb_strip(mel_db: np.ndarray, w: int, h: int) -> Image.Image:
     return Image.fromarray(rgba[:, :, :3], mode="RGB")
 
 def build_seamless_png(seg_data: list, top_genre: str, conf: float) -> bytes:
-    """
-    Each segment occupies exactly PX_PER_SEC * SEGMENT_DURATION pixels wide.
-    No gaps, no separators → truly seamless spectrogram timeline.
-    One genre label bar across the full bottom.
-    Time ticks every 30 seconds.
-    """
-    seg_w    = int(PX_PER_SEC * SEGMENT_DURATION)  # px per segment
-    n        = len(seg_data)
-    total_w  = seg_w * n
-    total_h  = STRIP_H + LABEL_H
+    seg_w   = int(PX_PER_SEC * SEGMENT_DURATION)
+    n       = len(seg_data)
+    total_w = seg_w * n
+    total_h = STRIP_H + LABEL_H
 
     canvas = Image.new("RGB", (total_w, total_h), color=(18, 18, 24))
     draw   = ImageDraw.Draw(canvas)
 
     try:
-        font_tick = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 9)
-        font_lbl  = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 12)
+        font_tick = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 9)
+        font_lbl  = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 12)
     except Exception:
         font_tick = ImageFont.load_default()
         font_lbl  = font_tick
 
-    # Paste strips seamlessly
-    for i, (start, mel_db, _) in enumerate(seg_data):
+    for i, (start, mel_db) in enumerate(seg_data):
         strip = mel_to_rgb_strip(mel_db, seg_w, STRIP_H)
         canvas.paste(strip, (i * seg_w, 0))
 
-    # Time tick marks every 30s (white vertical line + label)
-    tick_interval = 30  # seconds
-    for t in range(0, int(n * SEGMENT_DURATION), tick_interval):
+    for t in range(0, int(n * SEGMENT_DURATION), 30):
         x = int(t * PX_PER_SEC)
         if x >= total_w:
             break
-        # semi-transparent white tick line
         draw.line([(x, STRIP_H - 18), (x, STRIP_H - 1)], fill=(255, 255, 255), width=1)
         draw.text((x + 2, STRIP_H - 16), f"{t}s", fill=(220, 220, 220), font=font_tick)
 
-    # Single genre label bar — full width
-    if conf >= 0.60:
-        bar_col = (28, 120, 60)
-    elif conf >= 0.40:
-        bar_col = (160, 120, 10)
-    else:
-        bar_col = (150, 40, 40)
-
+    bar_col = (28, 120, 60) if conf >= 0.60 else (160, 120, 10) if conf >= 0.40 else (150, 40, 40)
     draw.rectangle([0, STRIP_H, total_w - 1, total_h - 1], fill=bar_col)
-    duration_str = f"{int(n * SEGMENT_DURATION)}s"
     label = (
         f"  {top_genre.upper()}   {conf*100:.1f}%"
-        f"  ·  {n} segments  ·  {duration_str} total  ·  {SEGMENT_DURATION:.0f}s / segment"
+        f"  ·  {n} segments  ·  {int(n * SEGMENT_DURATION)}s total  ·  {SEGMENT_DURATION:.0f}s / segment"
     )
     draw.text((8, STRIP_H + 7), label, fill=(240, 240, 240), font=font_lbl)
 
@@ -179,6 +168,127 @@ def build_seamless_png(seg_data: list, top_genre: str, conf: float) -> bytes:
     canvas.save(buf, format="PNG", optimize=True)
     buf.seek(0)
     return buf.getvalue()
+
+# ── Synced spectrogram HTML component ────────────────────────────────────────
+def spectrogram_player_html(png_b64: str, strip_h: int, label_h: int,
+                             px_per_sec: int, audio_duration: float) -> str:
+    total_h = strip_h + label_h
+    return f"""
+<div style="font-family:sans-serif;">
+
+  <!-- Auto-scroll toggle -->
+  <div style="margin-bottom:6px; display:flex; align-items:center; gap:10px;">
+    <label style="display:flex; align-items:center; gap:8px;
+        font-size:0.82rem; color:#ccc; cursor:pointer; user-select:none;">
+      <div id="toggle-wrap" onclick="toggleAutoScroll()" style="
+          width:38px; height:20px; border-radius:10px;
+          background:#2a7a4f; cursor:pointer; position:relative;
+          transition:background 0.2s;">
+        <div id="toggle-knob" style="
+            position:absolute; top:2px; left:18px;
+            width:16px; height:16px; border-radius:50%;
+            background:#fff; transition:left 0.2s;
+            box-shadow:0 1px 3px rgba(0,0,0,0.4);"></div>
+      </div>
+      Auto-scroll
+    </label>
+    <span id="autoscroll-status" style="font-size:0.75rem; color:#888;">ON</span>
+  </div>
+
+  <!-- Scrollable spectrogram -->
+  <div id="spec-scroll" style="
+      overflow-x: auto; overflow-y: hidden;
+      white-space: nowrap; background: #121218;
+      border: 1px solid #2a2a3a; border-radius: 8px;
+      padding: 6px; position: relative;">
+    <div id="spec-wrap" style="position:relative; display:inline-block; vertical-align:top;">
+      <img id="spec-img"
+           src="data:image/png;base64,{png_b64}"
+           style="height:{total_h}px; width:auto; display:block;" />
+      <div id="playhead" style="
+          position:absolute; top:0; left:0;
+          width:3px; height:{strip_h}px;
+          background:rgba(255,255,255,0.92);
+          box-shadow:0 0 8px rgba(255,255,255,0.6), 0 0 2px rgba(255,255,255,1);
+          pointer-events:none; display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {{
+  const PX_PER_SEC  = {px_per_sec};
+  const scroll      = document.getElementById('spec-scroll');
+  const playhead    = document.getElementById('playhead');
+  const wrap        = document.getElementById('spec-wrap');
+  const toggleWrap  = document.getElementById('toggle-wrap');
+  const toggleKnob  = document.getElementById('toggle-knob');
+  const statusLabel = document.getElementById('autoscroll-status');
+
+  let audio       = null;
+  let autoScroll  = true;
+  let userScroll  = false;
+  let scrollTimer = null;
+  let caughtUp    = false;  // one-time catch-up after spectrogram loads
+
+  window.toggleAutoScroll = function() {{
+    autoScroll = !autoScroll;
+    toggleWrap.style.background = autoScroll ? '#2a7a4f' : '#555';
+    toggleKnob.style.left       = autoScroll ? '18px' : '2px';
+    statusLabel.textContent     = autoScroll ? 'ON' : 'OFF';
+  }};
+
+  scroll.addEventListener('scroll', () => {{
+    userScroll = true;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {{ userScroll = false; }}, 1500);
+  }});
+
+  function findAudio() {{
+    try {{
+      const frames = window.parent.document.querySelectorAll('audio');
+      if (frames.length > 0) return frames[frames.length - 1];
+    }} catch(e) {{}}
+    return document.querySelector('audio');
+  }}
+
+  function update() {{
+    if (!audio) {{
+      audio = findAudio();
+      if (!audio) return;
+    }}
+    const t = audio.currentTime;
+    const x = t * PX_PER_SEC;
+
+    playhead.style.left    = x + 'px';
+    playhead.style.display = 'block';
+
+    // One-time catch-up: jump view to current playback position when spec loads
+    if (!caughtUp) {{
+      caughtUp = true;
+      const visW = scroll.clientWidth;
+      scroll.scrollLeft = Math.max(0, x - visW / 2);
+    }}
+
+    if (autoScroll && !userScroll && !audio.paused) {{
+      const visW = scroll.clientWidth;
+      scroll.scrollLeft = Math.max(0, x - visW / 2);
+    }}
+  }}
+
+  setInterval(update, 100);
+
+  // Click to seek
+  wrap.style.cursor = 'pointer';
+  wrap.addEventListener('click', (e) => {{
+    if (!audio) return;
+    const rect  = wrap.getBoundingClientRect();
+    const clickX = e.clientX - rect.left + scroll.scrollLeft;
+    audio.currentTime = clickX / PX_PER_SEC;
+  }});
+}})();
+</script>
+"""
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="GTZAN Music Genre", page_icon="🎵", layout="wide")
@@ -211,9 +321,9 @@ suffix      = "." + uploaded.name.rsplit(".", 1)[-1]
 tmp_path    = load_audio_to_tmp(audio_bytes, suffix)
 
 try:
-    st.audio(audio_bytes)
-
-    probs, seg_data = predict_file_full(tmp_path, sess)
+    # ── PHASE 1: Fast classification ─────────────────────────────────────────
+    with st.spinner(f"🔍 Classifying… (sampling {N_VOTE} segments)"):
+        probs = classify_quick(tmp_path, sess)
 
     if probs is None:
         st.error("❌ Could not process the file.")
@@ -223,48 +333,33 @@ try:
     top_genre = GENRES[top_idx[0]]
     top_conf  = float(probs[top_idx[0]])
 
-    # Big genre card
+    # Genre result card
     st.markdown(
         f"""
         <div style="
             background:linear-gradient(135deg,#1a1a2e,#16213e);
-            border:1px solid #333;border-radius:12px;
-            padding:1.2rem 2rem;margin:0.5rem 0 1rem 0;text-align:center;
-        ">
+            border:1px solid #333; border-radius:12px;
+            padding:1.2rem 2rem; margin:0.5rem 0 1rem 0; text-align:center;">
             <div style="font-size:3rem;line-height:1.1;">{GENRE_EMOJI[top_genre]}</div>
             <div style="font-size:1.8rem;font-weight:700;color:#f0f0f0;letter-spacing:3px;">
                 {top_genre.upper()}
             </div>
             <div style="font-size:1rem;color:#aaa;margin-top:0.3rem;">
-                {top_conf*100:.1f}% confidence
+                {top_conf*100:.1f}% confidence · {N_VOTE} sample segments
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    # Seamless scrollable spectrogram
-    with st.spinner("Rendering spectrogram..."):
-        png_bytes = build_seamless_png(seg_data, top_genre, top_conf)
-    png_b64 = base64.b64encode(png_bytes).decode()
+    # Spectrogram placeholder — will be filled by Phase 2
+    spec_placeholder  = st.empty()
+    audio_placeholder = st.empty()
 
-    st.markdown(
-        f'''<div style="
-            overflow-x:auto;overflow-y:hidden;white-space:nowrap;
-            background:#121218;border:1px solid #2a2a3a;
-            border-radius:8px;padding:6px;
-        ">
-            <img src="data:image/png;base64,{png_b64}"
-                 style="height:{STRIP_H + LABEL_H}px;width:auto;
-                        display:inline-block;vertical-align:top;" />
-        </div>''',
-        unsafe_allow_html=True,
-    )
-
-    # Top-3 + distribution
     st.divider()
-    col_res, col_dist = st.columns([1, 1], gap="large")
 
+    # Top-3 + distribution — rendered immediately, before Phase 2 starts
+    col_res, col_dist = st.columns([1, 1], gap="large")
     with col_res:
         st.subheader("🏆 Top-3 prediction")
         for rank, idx in enumerate(top_idx[:3]):
@@ -281,6 +376,30 @@ try:
                 st.progress(float(p), text=f"{GENRE_EMOJI[g]} {g}")
             with c2:
                 st.markdown(f"`{p*100:.1f}%`")
+
+    # ── PHASE 2: Full spectrogram (all segments, mel only, no CNN) ───────────
+    with spec_placeholder.container():
+        st.caption("⏳ Generating full spectrogram strip — will catch up to current playback position when ready…")
+        seg_data       = build_full_seg_data(tmp_path)
+        audio_duration = librosa.get_duration(path=tmp_path)
+
+        png_bytes = build_seamless_png(seg_data, top_genre, top_conf)
+        png_b64   = base64.b64encode(png_bytes).decode()
+
+        st.caption(
+            f"🎛️ {len(seg_data)} segments · {SEGMENT_DURATION:.0f}s each · "
+            "Playhead follows audio · Click strip to seek"
+        )
+
+        import streamlit.components.v1 as components
+        components.html(
+            spectrogram_player_html(png_b64, STRIP_H, LABEL_H, PX_PER_SEC, audio_duration),
+            height=STRIP_H + LABEL_H + 55,
+            scrolling=False,
+        )
+
+    with audio_placeholder.container():
+        st.audio(audio_bytes)
 
 finally:
     os.unlink(tmp_path)
