@@ -67,6 +67,16 @@ The best classical baseline in the repository is the random forest model trained
 
 The CNN pipeline operates on Mel-spectrograms and was later exported to ONNX for deployment. The Streamlit demo loads the ONNX model, accepts uploaded audio files, splits them into segments, generates Mel-spectrograms, and shows the predicted genre distribution.
 
+## Current progress (2026-05-15)
+
+- Data acquisition and organization completed; raw audio available under `music/` and original labels under `data/genres_original/`.
+- Preprocessing and feature extraction completed; generated artifacts include `features_3_sec.csv`, `features_30_sec.csv`, and spectrogram images in `Data/spectrograms/` and `Data/spectrograms_segmented/`.
+- Exploratory Data Analysis performed (`notebooks/01_EDA_with_theory.ipynb`).
+- Baseline ML experiments executed (`notebooks/02_Baseline_ML.ipynb`).
+- CNN training completed with best model saved to `models/cnn_best.pt` and exported to `models/cnn_gtzan.onnx` for deployment.
+- Streamlit demo prepared at `deploy/04_Streamlit_App.py` to run inference using the ONNX model.
+
+
 ## Environment setup
 
 Use the provided Conda environment file:
